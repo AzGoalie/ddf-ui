@@ -42,12 +42,26 @@ const comparatorToCQL = {
 }
 
 export const serialize = {
-  dateRelative: ({ last, unit }: ValueTypes['relative']) => {
+  dateRelative: ({ last, unit, to, date }: ValueTypes['relative']) => {
     if (unit === undefined || !parseFloat(last)) {
       return ''
     }
-    const prefix = unit === 'm' || unit === 'h' ? 'PT' : 'P'
-    return `RELATIVE(${prefix + last + unit.toUpperCase()})`
+    if(date === 'now') {
+      const prefix = unit === 'm' || unit === 'h' ? 'PT' : 'P'
+      return `= 'RELATIVE(${prefix + last + unit.toUpperCase()})'`
+    } else {
+      if(date) {
+        switch(to) {
+          case 'after-date':
+            return `AFTER ${moment(date).add(last, unit).toISOString()}`
+          case 'before-date':
+            return `BEFORE ${moment(date).subtract(last, unit).toISOString()}`
+          case 'around-date':
+            return `DURING ${moment(date).subtract(last, unit).toISOString()}/${moment(date).add(last, unit).toISOString()}`
+        }
+      }
+    }
+    return ''
   },
   dateBetween: (value: ValueTypes['between']) => {
     const from = moment(value.start)
@@ -115,7 +129,9 @@ export type ValueTypes = {
   relative: {
     last: string
     unit: 'm' | 'h' | 'd' | 'M' | 'y'
-  }
+    to: 'before-date' | 'after-date' | 'around-date'
+    date?: string | 'now' // iso8601 date string
+}
   during: {
     start: string
     end: string

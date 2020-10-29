@@ -160,6 +160,11 @@ const QueryTime = ({ value, onChange }: QueryTimeProps) => {
             <Grid item>
               <Swath className="w-1 h-full" />
             </Grid>
+            <Grid container direction="column">
+                          {value.type === "RELATIVE" && 
+            <Grid item className="w-full pb-2 pl-2">
+              Apply time range to
+            </Grid>}
             <Grid item className="w-full pl-2">
               <Autocomplete
                 // @ts-ignore Property 'fullWidth' does not exist on type (error is wrong)
@@ -194,6 +199,7 @@ const QueryTime = ({ value, onChange }: QueryTimeProps) => {
                   <TextField {...params} variant="outlined" />
                 )}
               />
+            </Grid>
             </Grid>
           </Grid>
           <Grid

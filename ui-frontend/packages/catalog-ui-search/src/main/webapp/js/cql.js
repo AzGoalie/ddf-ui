@@ -573,9 +573,7 @@ function write(filter) {
     // temporalClass
     case 'RELATIVE':
       // weird thing I noticed is you have to wrap the value in single quotes, double quotes don't work
-      return `${wrap(filter.property)} = '${serialize.dateRelative(
-        filter.value
-      )}'`
+      return `${wrap(filter.property)} ${serialize.dateRelative(filter.value)}`
     case 'BEFORE':
     case 'AFTER':
       return (

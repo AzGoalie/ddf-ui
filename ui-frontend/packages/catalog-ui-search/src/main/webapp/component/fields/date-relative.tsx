@@ -132,8 +132,16 @@ export const DateRelativeField = ({ value, onChange }: Props) => {
         onChange={DateHelpers.Blueprint.DateProps.generateOnChange(setDate)}
         parseDate={DateHelpers.Blueprint.commonProps.parseDate}
         placeholder={'M/D/YYYY'}
-        shortcuts={createDefaultShortcuts()}
+        todayButtonText="Now"
+        // shortcuts={createDefaultShortcuts()}
         timePrecision="minute"
+        dayPickerProps={{
+          todayButton: "Now",
+          onTodayButtonClick: () => {
+            console.log("Today Button Clicked")
+            setDate('Now')
+          },
+        }}
         {...(value.date ? {
               value: DateHelpers.Blueprint.DateProps.generateValue(value.date),
             }

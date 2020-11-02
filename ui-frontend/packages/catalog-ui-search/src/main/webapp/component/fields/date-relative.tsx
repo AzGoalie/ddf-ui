@@ -4,11 +4,13 @@ import TextField from '@material-ui/core/TextField'
 import MenuItem from '@material-ui/core/MenuItem'
 import { NumberField } from './number'
 import { ValueTypes } from '../filter-builder/filter.structure'
-import { DateInput, IDatePickerShortcut } from '@blueprintjs/datetime'
-import { MuiOutlinedInputBorderClasses } from '../theme/theme'
+import { DateInput, DatePicker, IDatePickerShortcut } from '@blueprintjs/datetime'
 import { DateHelpers } from './date-helpers'
 import { clone } from '@blueprintjs/datetime/lib/esm/common/dateUtils'
 import CalendarIcon from '@material-ui/icons/Event'
+import { Dropdown, DropdownContext } from '../atlas-dropdown'
+import { BetterClickAwayListener } from '../better-click-away-listener/better-click-away-listener'
+import Paper from '@material-ui/core/Paper/Paper'
 
 type Props = {
   value: ValueTypes['relative']
@@ -34,6 +36,7 @@ const isInvalid = ({ value }: Props) => {
 
 export const DateRelativeField = ({ value, onChange }: Props) => {
   const [date, setDate] = React.useState('now')
+  const dropdownContext = React.useContext(DropdownContext)
   React.useEffect(() => {
     onChange({
       ...defaultValue,
@@ -118,9 +121,70 @@ export const DateRelativeField = ({ value, onChange }: Props) => {
           <MenuItem value="around-date">Around</MenuItem>
         </TextField>
       </Grid>
-      <DateInput
+      <Dropdown
+        content={(context) => {
+          return (
+            <Paper
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (e.which === 13) { //ENTER
+                  //format the date and show it formatted
+                } else if (e.which === 9) { //TAB
+                  //not sure if any action needs to take place here
+                } else if (e.which === 27) { //ESCAPE
+                  //close the date picker
+                }
+              }}
+            >
+            <DatePicker 
+              onChange={(selectedDate: Date, isUserChange: boolean) => {
+                const onChange = DateHelpers.Blueprint.DateProps.generateOnChange(setDate)
+                if(onChange) {
+                  onChange(selectedDate, isUserChange)
+                }
+                context.deepCloseAndRefocus.bind(context)()
+              }}
+              shortcuts={createDefaultShortcuts()}
+              onShortcutChange={(shortcut: IDatePickerShortcut) => {
+                  if(shortcut.label === "Now") {
+                    setDate("now")
+                  }
+              }} 
+              timePrecision="minute"
+              {...(value.date ? {
+                value: DateHelpers.Blueprint.DateProps.generateValue(value.date),
+              }
+            : {}
+            )
+          }
+            /></Paper>)
+        }}
+      >
+        {({handleClick}) => {
+          return <TextField 
+          fullWidth 
+          variant="outlined" 
+          placeholder="M/D/YYYY" 
+          size = "small"
+          onClick={handleClick}
+          onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.which === 13) { //ENTER
+              //format the date and show it formatted
+            } else if (e.which === 9) { //TAB
+              //not sure if any action needs to take place here
+            } else if (e.which === 27) { //ESCAPE
+              //close the date picker
+            }
+          }}
+          value={date === 'now' ? "Now" : DateHelpers.Blueprint.commonProps.formatDate(DateHelpers.Blueprint.commonProps.parseDate(date) as Date)}
+          InputProps={{
+           endAdornment: (<CalendarIcon/>)
+          }}
+          />
+        }}
+      </Dropdown>
+
+      {/* <DateInput
         rightElement= {(<CalendarIcon/>)}
-        className={MuiOutlinedInputBorderClasses}
         closeOnSelection={false}
         fill
         formatDate={(dateToFormat: Date) => {
@@ -132,28 +196,20 @@ export const DateRelativeField = ({ value, onChange }: Props) => {
         onChange={DateHelpers.Blueprint.DateProps.generateOnChange(setDate)}
         parseDate={DateHelpers.Blueprint.commonProps.parseDate}
         placeholder={'M/D/YYYY'}
-        todayButtonText="Now"
-        // shortcuts={createDefaultShortcuts()}
+        shortcuts={createDefaultShortcuts()}
         timePrecision="minute"
-        dayPickerProps={{
-          todayButton: "Now",
-          onTodayButtonClick: () => {
-            console.log("Today Button Clicked")
-            setDate('Now')
-          },
-        }}
         {...(value.date ? {
               value: DateHelpers.Blueprint.DateProps.generateValue(value.date),
             }
           : {}
           )
         }
-      />
+      /> */}
     </Grid>
   )
 }
 
-const createShortcut = (label: string, date: Date | undefined) => {
+const createShortcut = (label: string, date: Date) => {
   return {date, label, includeTime: true} as IDatePickerShortcut
 }
 

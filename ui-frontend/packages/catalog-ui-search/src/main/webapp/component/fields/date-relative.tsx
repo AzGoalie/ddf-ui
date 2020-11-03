@@ -4,12 +4,11 @@ import TextField from '@material-ui/core/TextField'
 import MenuItem from '@material-ui/core/MenuItem'
 import { NumberField } from './number'
 import { ValueTypes } from '../filter-builder/filter.structure'
-import { DatePicker, IDatePickerShortcut } from '@blueprintjs/datetime'
+import {DatePicker, IDatePickerShortcut } from '@blueprintjs/datetime'
 import { DateHelpers } from './date-helpers'
 import { clone } from '@blueprintjs/datetime/lib/esm/common/dateUtils'
 import CalendarIcon from '@material-ui/icons/Event'
 import { Dropdown } from '../atlas-dropdown'
-import Paper from '@material-ui/core/Paper/Paper'
 import { BetterClickAwayListener } from '../better-click-away-listener/better-click-away-listener'
 
 type Props = {
@@ -36,6 +35,9 @@ const isInvalid = ({ value }: Props) => {
 
 export const DateRelativeField = ({ value, onChange }: Props) => {
   const [date, setDate] = React.useState('now')
+  const setAndFormatDate = (date: string) => {
+    setDate(DateHelpers.Blueprint.commonProps.formatDate(DateHelpers.Blueprint.commonProps.parseDate(date) as Date))
+  }
   React.useEffect(() => {
     onChange({
       ...defaultValue,
@@ -128,7 +130,7 @@ export const DateRelativeField = ({ value, onChange }: Props) => {
             }}>
             <DatePicker 
               onChange={(selectedDate: Date, isUserChange: boolean) => {
-                const onChange = DateHelpers.Blueprint.DateProps.generateOnChange(setDate)
+                const onChange = DateHelpers.Blueprint.DateProps.generateOnChange(setAndFormatDate)
                 if(onChange) {
                   onChange(selectedDate, isUserChange)
                 }
@@ -155,48 +157,35 @@ export const DateRelativeField = ({ value, onChange }: Props) => {
           return <TextField 
           fullWidth 
           variant="outlined" 
-          placeholder="M/D/YYYY" 
+          placeholder="DD MM YYYY" 
           size = "small"
           onClick={handleClick}
           onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
             if (e.which === 13) { //ENTER
               //format the date and show it formatted
+              setAndFormatDate(date)
+              //Should close after performing this action
             } else if (e.which === 9) { //TAB
               //not sure if any action needs to take place here
             } else if (e.which === 27) { //ESCAPE
               //close the date picker
             }
           }}
-          value={date === 'now' ? "Now" : DateHelpers.Blueprint.commonProps.formatDate(DateHelpers.Blueprint.commonProps.parseDate(date) as Date)}
+          onChange={(e) => {
+            const valueString = (e.target as HTMLInputElement).value
+            //DON'T FORMAT THIS JUST YET- as long as the date picker is open this will work like blueprint.js
+            //and automatically move around the date picker for you, formatting this up front causes the user
+            //input to be blown away
+            setDate(valueString)
+          }}
+          //Only format the date to display when it comes from the date picker OR the user has hit enter
+          value={date === 'now' ? "Now" : date}
           InputProps={{
            endAdornment: (<CalendarIcon/>)
           }}
           />
         }}
       </Dropdown>
-
-      {/* <DateInput
-        rightElement= {(<CalendarIcon/>)}
-        closeOnSelection={false}
-        fill
-        formatDate={(dateToFormat: Date) => {
-          if(date === 'now'){
-            return "Now"
-          }
-          return DateHelpers.Blueprint.commonProps.formatDate(dateToFormat)
-        }}
-        onChange={DateHelpers.Blueprint.DateProps.generateOnChange(setDate)}
-        parseDate={DateHelpers.Blueprint.commonProps.parseDate}
-        placeholder={'M/D/YYYY'}
-        shortcuts={createDefaultShortcuts()}
-        timePrecision="minute"
-        {...(value.date ? {
-              value: DateHelpers.Blueprint.DateProps.generateValue(value.date),
-            }
-          : {}
-          )
-        }
-      /> */}
     </Grid>
   )
 }
@@ -233,25 +222,4 @@ const createDefaultShortcuts = () => {
     createShortcut( "1 year ago", oneYearAgo),
     createShortcut("Past 2 years", twoYearsAgo),
   ];
-}
-
-const handleInputChange = (e: React.SyntheticEvent<HTMLInputElement>, setDate: (value: string) => void) => {
-  const valueString = (e.target as HTMLInputElement).value
-  const value = DateHelpers.Blueprint.commonProps.parseDate(valueString)
-
-
-  // if (isDateValid(value) && this.isDateInRange(value)) {
-  //     if (this.props.value === undefined) {
-  //         this.setState({ value, valueString });
-  //     } else {
-  //         this.setState({ valueString });
-  //     }
-  //     Utils.safeInvoke(this.props.onChange, value, true);
-  // } else {
-  //     if (valueString.length === 0) {
-  //         Utils.safeInvoke(this.props.onChange, null, true);
-  //     }
-  //     this.setState({ valueString });
-  // }
-  // this.safeInvokeInputProp("onChange", e);
 }

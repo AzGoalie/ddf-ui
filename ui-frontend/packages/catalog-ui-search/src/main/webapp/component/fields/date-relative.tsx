@@ -4,13 +4,13 @@ import TextField from '@material-ui/core/TextField'
 import MenuItem from '@material-ui/core/MenuItem'
 import { NumberField } from './number'
 import { ValueTypes } from '../filter-builder/filter.structure'
-import { DateInput, DatePicker, IDatePickerShortcut } from '@blueprintjs/datetime'
+import { DatePicker, IDatePickerShortcut } from '@blueprintjs/datetime'
 import { DateHelpers } from './date-helpers'
 import { clone } from '@blueprintjs/datetime/lib/esm/common/dateUtils'
 import CalendarIcon from '@material-ui/icons/Event'
-import { Dropdown, DropdownContext } from '../atlas-dropdown'
-import { BetterClickAwayListener } from '../better-click-away-listener/better-click-away-listener'
+import { Dropdown } from '../atlas-dropdown'
 import Paper from '@material-ui/core/Paper/Paper'
+import { BetterClickAwayListener } from '../better-click-away-listener/better-click-away-listener'
 
 type Props = {
   value: ValueTypes['relative']
@@ -36,7 +36,6 @@ const isInvalid = ({ value }: Props) => {
 
 export const DateRelativeField = ({ value, onChange }: Props) => {
   const [date, setDate] = React.useState('now')
-  const dropdownContext = React.useContext(DropdownContext)
   React.useEffect(() => {
     onChange({
       ...defaultValue,
@@ -124,17 +123,9 @@ export const DateRelativeField = ({ value, onChange }: Props) => {
       <Dropdown
         content={(context) => {
           return (
-            <Paper
-              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                if (e.which === 13) { //ENTER
-                  //format the date and show it formatted
-                } else if (e.which === 9) { //TAB
-                  //not sure if any action needs to take place here
-                } else if (e.which === 27) { //ESCAPE
-                  //close the date picker
-                }
-              }}
-            >
+            <BetterClickAwayListener onClickAway={() => {
+              context.deepCloseAndRefocus.bind(context)()
+            }}>
             <DatePicker 
               onChange={(selectedDate: Date, isUserChange: boolean) => {
                 const onChange = DateHelpers.Blueprint.DateProps.generateOnChange(setDate)
@@ -156,7 +147,8 @@ export const DateRelativeField = ({ value, onChange }: Props) => {
             : {}
             )
           }
-            /></Paper>)
+            />
+            </BetterClickAwayListener>)
         }}
       >
         {({handleClick}) => {
@@ -241,4 +233,25 @@ const createDefaultShortcuts = () => {
     createShortcut( "1 year ago", oneYearAgo),
     createShortcut("Past 2 years", twoYearsAgo),
   ];
+}
+
+const handleInputChange = (e: React.SyntheticEvent<HTMLInputElement>, setDate: (value: string) => void) => {
+  const valueString = (e.target as HTMLInputElement).value
+  const value = DateHelpers.Blueprint.commonProps.parseDate(valueString)
+
+
+  // if (isDateValid(value) && this.isDateInRange(value)) {
+  //     if (this.props.value === undefined) {
+  //         this.setState({ value, valueString });
+  //     } else {
+  //         this.setState({ valueString });
+  //     }
+  //     Utils.safeInvoke(this.props.onChange, value, true);
+  // } else {
+  //     if (valueString.length === 0) {
+  //         Utils.safeInvoke(this.props.onChange, null, true);
+  //     }
+  //     this.setState({ valueString });
+  // }
+  // this.safeInvokeInputProp("onChange", e);
 }

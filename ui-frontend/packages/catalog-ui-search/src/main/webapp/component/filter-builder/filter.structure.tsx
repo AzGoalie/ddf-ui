@@ -53,6 +53,7 @@ export const serialize = {
       if(date) {
         switch(to) {
           //fix these
+          //make sure end dates can't go past now
           case 'after-date':
             return `AFTER ${moment(date).add(last, unit).toISOString()}`
           case 'before-date':

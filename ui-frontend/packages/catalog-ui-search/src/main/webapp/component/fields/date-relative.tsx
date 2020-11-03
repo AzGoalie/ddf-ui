@@ -42,7 +42,7 @@ export const DateRelativeField = ({ value, onChange }: Props) => {
     onChange({
       ...defaultValue,
       ...value,
-      date,
+      date, //Make sure this is an ISO string
     }
     )
   }, [date]) 
@@ -160,6 +160,11 @@ export const DateRelativeField = ({ value, onChange }: Props) => {
           placeholder="DD MM YYYY" 
           size = "small"
           onClick={handleClick}
+          // onBlur={() => {
+          //   //Formats the date nicely when the user is no longer focused here
+          //   //Do we need this? the right value is already sent to the backend
+          //   setAndFormatDate(date)
+          // }}
           onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
             if (e.which === 13) { //ENTER
               //format the date and show it formatted
